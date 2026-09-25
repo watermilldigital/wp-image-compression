@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/watermilldigital/wp-image-compression/tags"><img src="https://img.shields.io/badge/version-v2.0.0-blue" alt="Version"></a>
+  <a href="https://github.com/watermilldigital/wp-image-compression/tags"><img src="https://img.shields.io/badge/version-v2.1.0-blue" alt="Version"></a>
   <img src="https://img.shields.io/badge/php-%5E8.4-777bb4" alt="PHP ^8.4">
   <img src="https://img.shields.io/badge/license-GPL--2.0--or--later-blue" alt="License: GPL-2.0-or-later">
 </p>

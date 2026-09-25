@@ -195,31 +195,31 @@ add_action(
 				$t = wp_image_compression_totals();
 				?>
 				<style>
-					#grist .inside { margin: 0; padding: 0; }
-					.grist-body { padding: 16px 12px 4px; }
-					.grist-saved { display: flex; align-items: baseline; gap: 8px; margin: 0 0 4px; }
-					.grist-saved strong { font-size: 32px; line-height: 1.1; font-weight: 600; }
-					.grist-saved span { color: #008a20; font-weight: 600; }
-					.grist-bar { height: 6px; margin: 16px 0 6px; background: #f0f0f1; border-radius: 3px; overflow: hidden; }
-					.grist-bar div { height: 100%; background: var(--wp-admin-theme-color, #2271b1); }
-					.grist-body .notice { margin: 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-					.grist-body .notice p { margin: 8px 0; }
-					.grist-settings { margin: 12px 0 0; padding: 10px 12px; border-top: 1px solid #f0f0f1; background: #f6f7f7; color: #646970; font-size: 12px; }
+					#wp_image_compression .inside { margin: 0; padding: 0; }
+					.wp-image-compression-body { padding: 16px 12px 4px; }
+					.wp-image-compression-saved { display: flex; align-items: baseline; gap: 8px; margin: 0 0 4px; }
+					.wp-image-compression-saved strong { font-size: 32px; line-height: 1.1; font-weight: 600; }
+					.wp-image-compression-saved span { color: #008a20; font-weight: 600; }
+					.wp-image-compression-bar { height: 6px; margin: 16px 0 6px; background: #f0f0f1; border-radius: 3px; overflow: hidden; }
+					.wp-image-compression-bar div { height: 100%; background: var(--wp-admin-theme-color, #2271b1); }
+					.wp-image-compression-body .notice { margin: 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+					.wp-image-compression-body .notice p { margin: 8px 0; }
+					.wp-image-compression-settings { margin: 12px 0 0; padding: 10px 12px; border-top: 1px solid #f0f0f1; background: #f6f7f7; color: #646970; font-size: 12px; }
 				</style>
-				<div class="grist-body">
+				<div class="wp-image-compression-body">
 					<?php if ( $t['before'] > 0 ) : ?>
-						<p class="grist-saved">
+						<p class="wp-image-compression-saved">
 							<strong><?php echo esc_html( size_format( max( 0, $t['saved'] ), 1 ) ); ?></strong>
 							<?php /* translators: %d: percentage. */ ?>
-							<span><?php echo esc_html( sprintf( __( '%d%% smaller', 'grist' ), (int) round( 100 * $t['saved'] / $t['before'] ) ) ); ?></span>
+							<span><?php echo esc_html( sprintf( __( '%d%% smaller', 'wp-image-compression' ), (int) round( 100 * $t['saved'] / $t['before'] ) ) ); ?></span>
 						</p>
-						<p class="description"><?php esc_html_e( 'Saved compared with WordPress on its own.', 'grist' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Saved compared with WordPress on its own.', 'wp-image-compression' ); ?></p>
 					<?php endif; ?>
-					<div class="grist-bar"><div style="width: <?php echo (int) ( $t['images'] ? round( 100 * ( $t['images'] - $t['pending'] ) / $t['images'] ) : 0 ); ?>%"></div></div>
+					<div class="wp-image-compression-bar"><div style="width: <?php echo (int) ( $t['images'] ? round( 100 * ( $t['images'] - $t['pending'] ) / $t['images'] ) : 0 ); ?>%"></div></div>
 					<p class="description">
 						<?php
 						/* translators: 1: compressed images, 2: images, 3: compressed files. */
-						printf( esc_html__( '%1$s of %2$s images compressed (%3$s files, counting every image size).', 'grist' ), esc_html( number_format_i18n( $t['images'] - $t['pending'] ) ), esc_html( number_format_i18n( $t['images'] ) ), esc_html( number_format_i18n( $t['done'] ) ) );
+						printf( esc_html__( '%1$s of %2$s images compressed (%3$s files, counting every image size).', 'wp-image-compression' ), esc_html( number_format_i18n( $t['images'] - $t['pending'] ) ), esc_html( number_format_i18n( $t['images'] ) ), esc_html( number_format_i18n( $t['done'] ) ) );
 						?>
 					</p>
 					<?php if ( $t['pending'] > 0 ) : ?>
@@ -227,15 +227,15 @@ add_action(
 							<p>
 								<?php
 								/* translators: %s: number of images. */
-								printf( esc_html( _n( '%s image needs compressing.', '%s images need compressing.', $t['pending'], 'grist' ) ), esc_html( number_format_i18n( $t['pending'] ) ) );
+								printf( esc_html( _n( '%s image needs compressing.', '%s images need compressing.', $t['pending'], 'wp-image-compression' ) ), esc_html( number_format_i18n( $t['pending'] ) ) );
 								?>
-								<br><span class="description"><?php esc_html_e( 'Select all, then Bulk actions → Compress.', 'grist' ); ?></span>
+								<br><span class="description"><?php esc_html_e( 'Select all, then Bulk actions → Compress.', 'wp-image-compression' ); ?></span>
 							</p>
-							<a class="button" href="<?php echo esc_url( admin_url( 'upload.php?mode=list&grist=pending' ) ); ?>"><?php esc_html_e( 'Show them', 'grist' ); ?></a>
+							<a class="button" href="<?php echo esc_url( admin_url( 'upload.php?mode=list&wp_image_compression=pending' ) ); ?>"><?php esc_html_e( 'Show them', 'wp-image-compression' ); ?></a>
 						</div>
 					<?php endif; ?>
 				</div>
-				<p class="grist-settings">
+				<p class="wp-image-compression-settings">
 					<?php
 					printf(
 						/* translators: 1: quality 1-100, 2: on/off, 3: PNG setting summary, 4: max size. */
