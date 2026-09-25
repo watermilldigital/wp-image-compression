@@ -215,11 +215,11 @@ add_action(
 						</p>
 						<p class="description"><?php esc_html_e( 'Saved compared with WordPress on its own.', 'grist' ); ?></p>
 					<?php endif; ?>
-					<div class="grist-bar"><div style="width: <?php echo (int) ( $t['files'] ? round( 100 * $t['done'] / $t['files'] ) : 0 ); ?>%"></div></div>
+					<div class="grist-bar"><div style="width: <?php echo (int) ( $t['images'] ? round( 100 * ( $t['images'] - $t['pending'] ) / $t['images'] ) : 0 ); ?>%"></div></div>
 					<p class="description">
 						<?php
-						/* translators: 1: compressed files, 2: files, 3: images. */
-						printf( esc_html__( '%1$s of %2$s files compressed across %3$s images (full size and every image size).', 'grist' ), esc_html( number_format_i18n( $t['done'] ) ), esc_html( number_format_i18n( $t['files'] ) ), esc_html( number_format_i18n( $t['images'] ) ) );
+						/* translators: 1: compressed images, 2: images, 3: compressed files. */
+						printf( esc_html__( '%1$s of %2$s images compressed (%3$s files, counting every image size).', 'grist' ), esc_html( number_format_i18n( $t['images'] - $t['pending'] ) ), esc_html( number_format_i18n( $t['images'] ) ), esc_html( number_format_i18n( $t['done'] ) ) );
 						?>
 					</p>
 					<?php if ( $t['pending'] > 0 ) : ?>
