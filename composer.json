@@ -1,5 +1,5 @@
 {
-    "name": "watermilldigital/grist",
+    "name": "watermilldigital/wp-image-compression",
     "description": "Image compression for WordPress: JPEG to WebP at a set quality, lossy PNG, and per-file savings tracking.",
     "type": "wordpress-muplugin",
     "license": "GPL-2.0-or-later",

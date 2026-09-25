@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="grist">
-	<file>grist.php</file>
+<ruleset name="wp_image_compression">
+	<file>wp-image-compression.php</file>
 	<file>src</file>
 
 	<arg value="sp"/>

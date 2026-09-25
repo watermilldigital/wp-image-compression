@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name: Grist
+ * Plugin Name: WP Image Compression
  * Description: Image compression: JPEG to WebP at a set quality, lossy PNG, and per-file savings tracking with a dashboard widget and Media Library column.
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  *
  * Settings are wp-config.php constants, e.g.:
- *     define( 'GRIST_JPEG_QUALITY', 75 );
- * See grist_setting() for every setting and its default.
+ *     define( 'WP_IMAGE_COMPRESSION_JPEG_QUALITY', 75 );
+ * See wp_image_compression_setting() for every setting and its default.
  */
 
 /**
- * A setting from its GRIST_* constant, or the default.
+ * A setting from its WP_IMAGE_COMPRESSION_* constant, or the default.
  *
- * @param string $name Setting name without the GRIST_ prefix.
+ * @param string $name Setting name without the WP_IMAGE_COMPRESSION_ prefix.
  * @return mixed
  */
-function grist_setting( string $name ) {
+function wp_image_compression_setting( string $name ) {
 	$defaults = array(
 		'JPEG_QUALITY' => 80,   // 1-100. Also used for WebP output (converted JPEGs and WebP uploads).
 		'JPEG_TO_WEBP' => true, // Convert JPEG uploads to WebP. The original JPEG stays on disk.
@@ -26,7 +26,7 @@ function grist_setting( string $name ) {
 		'MAX_SIZE'     => 2560, // Longest side in px WordPress scales full-size uploads down to. false: never scale.
 	);
 
-	return defined( "GRIST_$name" ) ? constant( "GRIST_$name" ) : $defaults[ $name ];
+	return defined( "WP_IMAGE_COMPRESSION_$name" ) ? constant( "WP_IMAGE_COMPRESSION_$name" ) : $defaults[ $name ];
 }
 
 require_once __DIR__ . '/src/compress.php';

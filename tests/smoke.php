@@ -3,7 +3,7 @@
  * End-to-end check against a real WordPress install. Uploads generated
  * images, checks every file got compressed and recorded, then deletes them.
  *
- *     wp eval-file wp-content/mu-plugins/grist/tests/smoke.php
+ *     wp eval-file wp-content/mu-plugins/wp-image-compression/tests/smoke.php
  *
  * phpcs:disable -- test script.
  */
@@ -12,20 +12,20 @@ require_once ABSPATH . 'wp-admin/includes/image.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
 
-$tmp = get_temp_dir() . 'grist-smoke-' . wp_generate_password( 6, false );
+$tmp = get_temp_dir() . 'wp-image-compression-smoke-' . wp_generate_password( 6, false );
 wp_mkdir_p( $tmp );
 $ids = array();
 
-function grist_check( bool $ok, string $what ): void {
+function wp_image_compression_check( bool $ok, string $what ): void {
 	echo ( $ok ? 'ok   ' : 'FAIL ' ) . $what . PHP_EOL;
 	if ( ! $ok ) {
-		$GLOBALS['grist_failed'] = true;
+		$GLOBALS['wp_image_compression_failed'] = true;
 	}
 }
 
 // Photo-like: smooth gradients plus noise, the case lossy formats are for.
 // Drawn at quarter size and scaled up, since per-pixel GD drawing is slow.
-function grist_photo( int $w, int $h ): GdImage {
+function wp_image_compression_photo( int $w, int $h ): GdImage {
 	$qw = intdiv( $w, 4 );
 	$qh = intdiv( $h, 4 );
 	$i  = imagecreatetruecolor( $qw, $qh );
@@ -38,14 +38,14 @@ function grist_photo( int $w, int $h ): GdImage {
 	return imagescale( $i, $w, $h, IMG_BILINEAR_FIXED );
 }
 
-function grist_upload( string $file ): int {
+function wp_image_compression_upload( string $file ): int {
 	$copy = $file . '.upload';
 	copy( $file, $copy );
 	$id = media_handle_sideload( array( 'name' => basename( $file ), 'tmp_name' => $copy ) );
 	return is_wp_error( $id ) ? 0 : $id;
 }
 
-function grist_files( int $id ): array {
+function wp_image_compression_files( int $id ): array {
 	$m    = wp_get_attachment_metadata( $id );
 	$dir  = dirname( get_attached_file( $id ) );
 	$list = array( 'full' => $m );
@@ -58,82 +58,82 @@ function grist_files( int $id ): array {
 	return $list;
 }
 
-function grist_all_recorded( int $id, string $label ): void {
+function wp_image_compression_all_recorded( int $id, string $label ): void {
 	clearstatcache();
-	foreach ( grist_files( $id ) as $name => $e ) {
-		$r = $e['grist'] ?? null;
-		grist_check( is_array( $r ) && $r['after'] === filesize( $e['path'] ) && $e['filesize'] === filesize( $e['path'] ), "$label $name: recorded, sizes match disk" . ( $r ? " ({$r['status']}, {$r['before']} → {$r['after']})" : '' ) );
+	foreach ( wp_image_compression_files( $id ) as $name => $e ) {
+		$r = $e['wp_image_compression'] ?? null;
+		wp_image_compression_check( is_array( $r ) && $r['after'] === filesize( $e['path'] ) && $e['filesize'] === filesize( $e['path'] ), "$label $name: recorded, sizes match disk" . ( $r ? " ({$r['status']}, {$r['before']} → {$r['after']})" : '' ) );
 	}
-	grist_check( '0' === get_post_meta( $id, '_grist_pending', true ), "$label: nothing pending" );
+	wp_image_compression_check( '0' === get_post_meta( $id, '_wp_image_compression_pending', true ), "$label: nothing pending" );
 }
 
-imagejpeg( grist_photo( 1800, 1200 ), "$tmp/photo.jpg", 95 );
-imagejpeg( grist_photo( 3200, 2000 ), "$tmp/huge.jpg", 95 );
-imagepng( grist_photo( 1200, 800 ), "$tmp/graphic.png" );
+imagejpeg( wp_image_compression_photo( 1800, 1200 ), "$tmp/photo.jpg", 95 );
+imagejpeg( wp_image_compression_photo( 3200, 2000 ), "$tmp/huge.jpg", 95 );
+imagepng( wp_image_compression_photo( 1200, 800 ), "$tmp/graphic.png" );
 imagegif( imagecreatetruecolor( 400, 300 ), "$tmp/anim.gif" );
 
 // JPEG under MAX_SIZE: converted to WebP, the upload is the "before" for the full size.
-$ids[] = $jpg = grist_upload( "$tmp/photo.jpg" );
+$ids[] = $jpg = wp_image_compression_upload( "$tmp/photo.jpg" );
 $m     = wp_get_attachment_metadata( $jpg );
-grist_check( str_ends_with( $m['file'], '.webp' ) && ! empty( $m['original_image'] ), 'jpeg: full size is WebP, original kept' );
-grist_check( $m['grist']['before'] === filesize( "$tmp/photo.jpg" ), 'jpeg: full-size before = uploaded bytes' );
-grist_check( 'compressed' === $m['sizes']['medium']['grist']['status'], 'jpeg: sizes compressed vs WordPress default' );
-grist_all_recorded( $jpg, 'jpeg' );
+wp_image_compression_check( str_ends_with( $m['file'], '.webp' ) && ! empty( $m['original_image'] ), 'jpeg: full size is WebP, original kept' );
+wp_image_compression_check( $m['wp_image_compression']['before'] === filesize( "$tmp/photo.jpg" ), 'jpeg: full-size before = uploaded bytes' );
+wp_image_compression_check( 'compressed' === $m['sizes']['medium']['wp_image_compression']['status'], 'jpeg: sizes compressed vs WordPress default' );
+wp_image_compression_all_recorded( $jpg, 'jpeg' );
 
 // JPEG over MAX_SIZE: scaled, so the full size's before is a measured encode, not the upload.
-$ids[] = $huge = grist_upload( "$tmp/huge.jpg" );
+$ids[] = $huge = wp_image_compression_upload( "$tmp/huge.jpg" );
 $m     = wp_get_attachment_metadata( $huge );
-grist_check( max( $m['width'], $m['height'] ) === grist_setting( 'MAX_SIZE' ), 'huge jpeg: scaled to MAX_SIZE' );
-grist_check( $m['grist']['before'] < filesize( "$tmp/huge.jpg" ), 'huge jpeg: before measured at scaled size' );
-grist_all_recorded( $huge, 'huge jpeg' );
+wp_image_compression_check( max( $m['width'], $m['height'] ) === wp_image_compression_setting( 'MAX_SIZE' ), 'huge jpeg: scaled to MAX_SIZE' );
+wp_image_compression_check( $m['wp_image_compression']['before'] < filesize( "$tmp/huge.jpg" ), 'huge jpeg: before measured at scaled size' );
+wp_image_compression_all_recorded( $huge, 'huge jpeg' );
 
 // PNG: palette, every file; the upload is kept as the original.
-$ids[] = $png = grist_upload( "$tmp/graphic.png" );
-foreach ( grist_files( $png ) as $name => $e ) {
-	grist_check( ! imageistruecolor( imagecreatefrompng( $e['path'] ) ), "png $name: palette" );
+$ids[] = $png = wp_image_compression_upload( "$tmp/graphic.png" );
+foreach ( wp_image_compression_files( $png ) as $name => $e ) {
+	wp_image_compression_check( ! imageistruecolor( imagecreatefrompng( $e['path'] ) ), "png $name: palette" );
 }
 $m = wp_get_attachment_metadata( $png );
-grist_check( str_ends_with( get_attached_file( $png ), '-min.png' ) && md5_file( wp_get_original_image_path( $png ) ) === md5_file( "$tmp/graphic.png" ), 'png: full size is a -min copy, upload kept untouched as original' );
-grist_all_recorded( $png, 'png' );
+wp_image_compression_check( str_ends_with( get_attached_file( $png ), '-min.png' ) && md5_file( wp_get_original_image_path( $png ) ) === md5_file( "$tmp/graphic.png" ), 'png: full size is a -min copy, upload kept untouched as original' );
+wp_image_compression_all_recorded( $png, 'png' );
 $png_first = $m;
 
 // Crop Thumbnails re-crop: a fresh truecolor size without a record gets processed.
 $path = dirname( get_attached_file( $png ) ) . '/' . $m['sizes']['medium']['file'];
-imagepng( grist_photo( 300, 200 ), $path );
+imagepng( wp_image_compression_photo( 300, 200 ), $path );
 clearstatcache();
 $m['sizes']['medium'] = array( 'file' => basename( $path ), 'width' => 300, 'height' => 200, 'mime-type' => 'image/png', 'filesize' => filesize( $path ) );
 wp_update_attachment_metadata( $png, apply_filters( 'crop_thumbnails_before_update_metadata', $m, $png ) );
-grist_all_recorded( $png, 'png after re-crop' );
+wp_image_compression_all_recorded( $png, 'png after re-crop' );
 
 // Regenerate (WP-CLI, same path as the bulk action): starts again from the untouched upload.
 WP_CLI::runcommand( "media regenerate $png --yes --quiet", array( 'launch' => false ) );
 $m = wp_get_attachment_metadata( $png );
-grist_check( $m['grist'] === $png_first['grist'] && $m['sizes']['large']['grist'] === $png_first['sizes']['large']['grist'], 'png regenerate: same results as the first upload, nothing compressed twice' );
-grist_all_recorded( $png, 'png after regenerate' );
+wp_image_compression_check( $m['wp_image_compression'] === $png_first['wp_image_compression'] && $m['sizes']['large']['wp_image_compression'] === $png_first['sizes']['large']['wp_image_compression'], 'png regenerate: same results as the first upload, nothing compressed twice' );
+wp_image_compression_all_recorded( $png, 'png after regenerate' );
 
 // GIF: left alone, recorded as unsupported.
-$ids[] = $gif = grist_upload( "$tmp/anim.gif" );
-grist_check( 'unsupported' === wp_get_attachment_metadata( $gif )['grist']['status'], 'gif: unsupported' );
+$ids[] = $gif = wp_image_compression_upload( "$tmp/anim.gif" );
+wp_image_compression_check( 'unsupported' === wp_get_attachment_metadata( $gif )['wp_image_compression']['status'], 'gif: unsupported' );
 
-// GRIST_JPEG_TO_WEBP off: JPEG stays JPEG, full size compressed into a -min copy.
+// WP_IMAGE_COMPRESSION_JPEG_TO_WEBP off: JPEG stays JPEG, full size compressed into a -min copy.
 remove_all_filters( 'image_editor_output_format' );
-$ids[] = $keep = grist_upload( "$tmp/photo.jpg" );
+$ids[] = $keep = wp_image_compression_upload( "$tmp/photo.jpg" );
 $m     = wp_get_attachment_metadata( $keep );
-grist_check( str_ends_with( $m['file'], '-min.jpg' ) && 'image/jpeg' === wp_get_image_mime( get_attached_file( $keep ) ) && 'compressed' === $m['grist']['status'], "jpeg kept as jpeg: full size compressed, {$m['grist']['before']} → {$m['grist']['after']}" );
-grist_all_recorded( $keep, 'jpeg kept as jpeg' );
+wp_image_compression_check( str_ends_with( $m['file'], '-min.jpg' ) && 'image/jpeg' === wp_get_image_mime( get_attached_file( $keep ) ) && 'compressed' === $m['wp_image_compression']['status'], "jpeg kept as jpeg: full size compressed, {$m['wp_image_compression']['before']} → {$m['wp_image_compression']['after']}" );
+wp_image_compression_all_recorded( $keep, 'jpeg kept as jpeg' );
 
-// An upload from before Grist: no totals until it's compressed.
-delete_post_meta( $jpg, '_grist_pending' );
-grist_check( in_array( $jpg, get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'fields' => 'ids', 'meta_query' => array( array( 'key' => '_grist_pending', 'compare' => 'NOT EXISTS' ) ) ) ), true ), 'pre-Grist image shows as not compressed' );
+// An upload from before WP Image Compression: no totals until it's compressed.
+delete_post_meta( $jpg, '_wp_image_compression_pending' );
+wp_image_compression_check( in_array( $jpg, get_posts( array( 'post_type' => 'attachment', 'post_status' => 'inherit', 'fields' => 'ids', 'meta_query' => array( array( 'key' => '_wp_image_compression_pending', 'compare' => 'NOT EXISTS' ) ) ) ), true ), 'pre-WP Image Compression image shows as not compressed' );
 
 $left = array();
 foreach ( $ids as $id ) {
-	$paths = array_merge( array( wp_get_original_image_path( $id ) ), array_column( grist_files( $id ), 'path' ) );
+	$paths = array_merge( array( wp_get_original_image_path( $id ) ), array_column( wp_image_compression_files( $id ), 'path' ) );
 	wp_delete_attachment( $id, true );
 	$left = array_merge( $left, array_filter( $paths, 'file_exists' ) );
 }
-grist_check( ! $left, 'delete: original, full size and every size removed' . ( $left ? ': ' . implode( ', ', $left ) : '' ) );
+wp_image_compression_check( ! $left, 'delete: original, full size and every size removed' . ( $left ? ': ' . implode( ', ', $left ) : '' ) );
 array_map( 'unlink', glob( "$tmp/*" ) );
 rmdir( $tmp );
 
-echo empty( $GLOBALS['grist_failed'] ) ? "\nAll passed.\n" : "\nFAILURES above.\n";
+echo empty( $GLOBALS['wp_image_compression_failed'] ) ? "\nAll passed.\n" : "\nFAILURES above.\n";
