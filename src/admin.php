@@ -194,31 +194,48 @@ add_action(
 			function (): void {
 				$t = wp_image_compression_totals();
 				?>
-				<p>
-					<?php
-					/* translators: 1: images, 2: compressed files, 3: files. */
-					printf( esc_html__( '%1$s images · %2$s of %3$s files compressed (full size and every image size).', 'wp-image-compression' ), esc_html( number_format_i18n( $t['images'] ) ), esc_html( number_format_i18n( $t['done'] ) ), esc_html( number_format_i18n( $t['files'] ) ) );
-					?>
-				</p>
-				<?php if ( $t['before'] > 0 ) : ?>
-					<p><strong>
+				<style>
+					#grist .inside { margin: 0; padding: 0; }
+					.grist-body { padding: 16px 12px 4px; }
+					.grist-saved { display: flex; align-items: baseline; gap: 8px; margin: 0 0 4px; }
+					.grist-saved strong { font-size: 32px; line-height: 1.1; font-weight: 600; }
+					.grist-saved span { color: #008a20; font-weight: 600; }
+					.grist-bar { height: 6px; margin: 16px 0 6px; background: #f0f0f1; border-radius: 3px; overflow: hidden; }
+					.grist-bar div { height: 100%; background: var(--wp-admin-theme-color, #2271b1); }
+					.grist-body .notice { margin: 12px 0 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+					.grist-body .notice p { margin: 8px 0; }
+					.grist-settings { margin: 12px 0 0; padding: 10px 12px; border-top: 1px solid #f0f0f1; background: #f6f7f7; color: #646970; font-size: 12px; }
+				</style>
+				<div class="grist-body">
+					<?php if ( $t['before'] > 0 ) : ?>
+						<p class="grist-saved">
+							<strong><?php echo esc_html( size_format( max( 0, $t['saved'] ), 1 ) ); ?></strong>
+							<?php /* translators: %d: percentage. */ ?>
+							<span><?php echo esc_html( sprintf( __( '%d%% smaller', 'grist' ), (int) round( 100 * $t['saved'] / $t['before'] ) ) ); ?></span>
+						</p>
+						<p class="description"><?php esc_html_e( 'Saved compared with WordPress on its own.', 'grist' ); ?></p>
+					<?php endif; ?>
+					<div class="grist-bar"><div style="width: <?php echo (int) ( $t['images'] ? round( 100 * ( $t['images'] - $t['pending'] ) / $t['images'] ) : 0 ); ?>%"></div></div>
+					<p class="description">
 						<?php
-						/* translators: 1: size, e.g. 3.4 MB, 2: percentage. */
-						printf( esc_html__( 'Saved %1$s (%2$d%%) compared with WordPress on its own.', 'wp-image-compression' ), esc_html( size_format( max( 0, $t['saved'] ), 1 ) ), (int) round( 100 * $t['saved'] / $t['before'] ) );
+						/* translators: 1: compressed images, 2: images, 3: compressed files. */
+						printf( esc_html__( '%1$s of %2$s images compressed (%3$s files, counting every image size).', 'grist' ), esc_html( number_format_i18n( $t['images'] - $t['pending'] ) ), esc_html( number_format_i18n( $t['images'] ) ), esc_html( number_format_i18n( $t['done'] ) ) );
 						?>
-					</strong></p>
-				<?php endif; ?>
-				<?php if ( $t['pending'] > 0 ) : ?>
-					<p>
-						<?php
-						/* translators: %s: number of images. */
-						printf( esc_html( _n( '%s image needs compressing.', '%s images need compressing.', $t['pending'], 'wp-image-compression' ) ), esc_html( number_format_i18n( $t['pending'] ) ) );
-						?>
-						<a href="<?php echo esc_url( admin_url( 'upload.php?mode=list&wp_image_compression=pending' ) ); ?>"><?php esc_html_e( 'Show them', 'wp-image-compression' ); ?></a>,
-						<?php esc_html_e( 'then select all and use Bulk actions → Compress.', 'wp-image-compression' ); ?>
 					</p>
-				<?php endif; ?>
-				<p class="description">
+					<?php if ( $t['pending'] > 0 ) : ?>
+						<div class="notice notice-warning inline">
+							<p>
+								<?php
+								/* translators: %s: number of images. */
+								printf( esc_html( _n( '%s image needs compressing.', '%s images need compressing.', $t['pending'], 'grist' ) ), esc_html( number_format_i18n( $t['pending'] ) ) );
+								?>
+								<br><span class="description"><?php esc_html_e( 'Select all, then Bulk actions → Compress.', 'grist' ); ?></span>
+							</p>
+							<a class="button" href="<?php echo esc_url( admin_url( 'upload.php?mode=list&grist=pending' ) ); ?>"><?php esc_html_e( 'Show them', 'grist' ); ?></a>
+						</div>
+					<?php endif; ?>
+				</div>
+				<p class="grist-settings">
 					<?php
 					printf(
 						/* translators: 1: quality 1-100, 2: on/off, 3: PNG setting summary, 4: max size. */
