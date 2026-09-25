@@ -3,7 +3,10 @@
  * End-to-end check against a real WordPress install. Uploads generated
  * images, checks every file got compressed and recorded, then deletes them.
  *
- *     wp eval-file wp-content/mu-plugins/wp-image-compression/tests/smoke.php
+ * Run from this repo against a site with the plugin installed (tests/ isn't in
+ * the released package):
+ *
+ *     wp eval-file tests/smoke.php --path=/path/to/site/wp
  *
  * phpcs:disable -- test script.
  */

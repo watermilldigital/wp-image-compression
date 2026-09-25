@@ -60,11 +60,16 @@ To compress an existing library after installing, run `wp media regenerate --yes
 
 ```sh
 composer install
-composer check                                          # phpstan + phpcs
-wp eval-file wp-content/mu-plugins/wp-image-compression/tests/smoke.php # end to end, on a real install
+composer check   # phpstan + phpcs
 ```
 
-The smoke test uploads generated images, checks every file was compressed and recorded, then deletes them.
+The end-to-end smoke test uploads generated images, checks every file was compressed and recorded, then deletes them. `tests/` isn't in the released package, so run it from this clone against a site that has the plugin installed:
+
+```sh
+wp eval-file tests/smoke.php --path=/path/to/site/wp
+```
+
+It tests the copy the site loads, not this clone's `src/`. To test unreleased changes, put this clone's files in the site's `mu-plugins/wp-image-compression/` first.
 
 Release by bumping the version badge at the top of this README, then tagging (`git tag v2.1.0 && git push origin v2.1.0`). The badge is static because shields.io can't read tags from a private repo. After tagging, run `composer update watermilldigital/wp-image-compression` in each project.
 
