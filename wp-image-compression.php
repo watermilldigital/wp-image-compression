@@ -3,6 +3,7 @@
  * Plugin Name: WP Image Compression
  * Author: WaterMill Digital
  * Author URI: https://watermilldigital.com
+ * Version: 2.1.2
  * Description: Image compression: JPEG to WebP at a set quality, lossy PNG, and per-file savings tracking with a dashboard widget and Media Library column.
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
